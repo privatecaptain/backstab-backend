@@ -119,6 +119,11 @@ class StartGameHandler(tornado.web.RequestHandler):
         game = True
         self.write("Game Started Enjoy!!!")
 
+class StopGameHandler(tornado.web.RequestHandler):
+    def get(self):
+        game = False
+        self.write("Game Ended !!")
+
 
 application = tornado.web.Application([
     (r"/",MainHandler),
@@ -127,7 +132,8 @@ application = tornado.web.Application([
     (r"/createnewplayer/@Name=([\w]+)&Major=([\w]+)&Year=(\d)&Id=([\d]+)&Coordinates=([-]*[\d]+.[\d]+,[-]*[\d]+.[\d]+)",CreateNewPlayerHandler),
     (r"/updatecoordinates/([0-9]+)/@([-]*[0-9]+.[0-9]+),([-]*[0-9]+.[0-9]+)",UpdateCoordinatesById),
     (r"/killplayer/([0-9]+)",KillPlayerById),
-    (r"/startgame@backstabadmin",StartGameHandler)
+    (r"/startgame@backstabadmin",StartGameHandler),
+    (r"/stopgame",StopGameHandler)
 ])
  
 print "Server Running..."
