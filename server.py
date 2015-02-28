@@ -7,7 +7,6 @@ import ast
  
 filename = "data.json"
 gameList = []
-game = True
 
 
 def readjson():
@@ -15,6 +14,23 @@ def readjson():
     destination = ast.literal_eval(x.read())
     x.close()
     return destination
+
+def checkgame():
+    database = readjson()
+    return database["status"]
+
+def changestatus():
+    x = open(filename,"r+")
+    database = ast.literal_eval(x.read())
+    if database["status"] == "True":
+        database["status"] = "False"
+    else:
+        database["status"] = "True"
+    x.seek(0)
+    x.write(json.dumps(database))
+    x.truncate()
+    x.close()
+
 
 def update_gps_coordinates(id,coordinates):
     x = open(filename,"r+")
@@ -33,8 +49,6 @@ def createnewplayer(newplayer,id):
     x.write(json.dumps(destination))
     x.truncate()
     x.close()
-    if len(destination) >= 10:
-        game = True
 
 def killplayer(id):
     x = open(filename,"r+")
@@ -52,10 +66,13 @@ def startgame():
     x = open(filename,"r+")
     destination = ast.literal_eval(x.read())
     gameList = destination.keys()
+    if "status" in gameList:
+        gameList.remove("status")
     for i in range(0,len(gameList)-1):
         destination[gameList[i]]["target_id"] = gameList[i+1]
     temp = gameList[-1]
     destination[temp]["target_id"] = gameList[0]
+    destination["status"] = "True"
     x.seek(0)
     x.write(json.dumps(destination))
     x.truncate()
@@ -92,7 +109,7 @@ class CreateNewPlayerHandler(tornado.web.RequestHandler):
                     "year" : year,
                     "target_id":""
                      }
-        if game!=True : #Remeber to making something for double registration
+        if checkgame() == 'False': #Remeber to making something for double registration
             createnewplayer(newplayer,id)
             self.write('Player Created!!')
         else:
@@ -107,7 +124,7 @@ class UpdateCoordinatesById(tornado.web.RequestHandler):
 
 class KillPlayerById(tornado.web.RequestHandler):
     def get(self,id):
-        if True:
+        if checkgame() == "True":
             killplayer(id)
             self.write('Player Killed!!')
         else:
@@ -116,12 +133,11 @@ class KillPlayerById(tornado.web.RequestHandler):
 class StartGameHandler(tornado.web.RequestHandler):
     def  get(self):
         startgame()
-        game = True
         self.write("Game Started Enjoy!!!")
 
 class StopGameHandler(tornado.web.RequestHandler):
     def get(self):
-        game = False
+        changestatus()
         self.write("Game Ended !!")
 
 
